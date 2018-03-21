@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "21161116507",
+    "project_id": "pure-tribute-198514"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:21161116507:android:687350d1e6c54d94",
+        "android_client_info": {
+          "package_name": "com.companyname.GoogleLogin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "21161116507-e1pfdch7jitgb55tsr5nfpmp4oc7c5g0.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "21161116507-2o7f1jagppt1bo7diprp82bq5fe7efqg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.companyname.GoogleLogin",
+            "certificate_hash": "809b9a2959d38580251227a68641fa0427486fe0"
+          }
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAQy3_MvrBLdEqlWw4V_x84mtV0rbyZl4A"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
