@@ -44,8 +44,8 @@ namespace GoogleLogin.Droid
             CurrentActivity = activity;
         }
 
-        static EventHandler<LoginEventArgs> _onLogin;
-        public event EventHandler<LoginEventArgs> OnLogin
+        static EventHandler<GoogleClientResultEventArgs<GoogleUser>> _onLogin;
+        public event EventHandler<GoogleClientResultEventArgs<GoogleUser>> OnLogin
         {
             add => _onLogin += value;
             remove => _onLogin -= value;
@@ -56,11 +56,6 @@ namespace GoogleLogin.Droid
             Intent intent = Auth.GoogleSignInApi.GetSignInIntent(googleApiClient);
             CurrentActivity.StartActivityForResult(intent, 1);
             googleApiClient.Connect();
-        }
-
-        protected virtual void OnLoginCompleted(LoginEventArgs e)
-        {
-            _onLogin?.Invoke(this, e);
         }
 
         static EventHandler _onLogout;
@@ -87,12 +82,11 @@ namespace GoogleLogin.Droid
             OnLogoutCompleted(EventArgs.Empty);
         }
 
+        public bool IsLoggedIn { get; }
+
         public void OnAuthCompleted(GoogleSignInResult result)
         {
-            LoginEventArgs args = new LoginEventArgs();
-
-            // Assume the authentication failed
-            args.Message = "Authentication Failed";
+            Models.GoogleUser googleUser = null;
 
             // Log the result of the authentication
             System.Diagnostics.Debug.WriteLine(Tag + ": Is it Authenticated? " + result.IsSuccess);
@@ -100,18 +94,24 @@ namespace GoogleLogin.Droid
             if (result.IsSuccess)
             {          
                 GoogleSignInAccount userAccount = result.SignInAccount;
-                args.User = new GoogleUser
+                googleUser = new GoogleUser
                 {
                     Name = userAccount.DisplayName,
                     Email = userAccount.Email,
                     Picture = new Uri((userAccount.PhotoUrl != null ? $"{userAccount.PhotoUrl}" : $"https://autisticdating.net/imgs/profile-placeholder.jpg"))
                 };
-
-                args.Message = "The authentication was a success!";
+                var googleArgs =
+                    new GoogleClientResultEventArgs<Models.GoogleUser>(googleUser, GoogleActionStatus.Completed, result.Status.StatusMessage);
+               
+                // Send the result to the receivers
+                _onLogin?.Invoke(this, googleArgs);
+            }
+            else
+            {
+                var googleArgs =
+                    new GoogleClientResultEventArgs<Models.GoogleUser>(googleUser, GoogleActionStatus.Canceled, result.Status.StatusMessage);
             }
 
-            // Send the result to the receivers
-            OnLoginCompleted(args);
         }
 
         public void OnConnected(Bundle connectionHint)
@@ -121,16 +121,14 @@ namespace GoogleLogin.Droid
 
         public void OnConnectionSuspended(int cause)
         {
-            LoginEventArgs e = new LoginEventArgs();
-            e.Message = "Canceled!";
-            _onLogin?.Invoke(this, e);
+            GoogleClientResultEventArgs<GoogleUser> args = new GoogleClientResultEventArgs<GoogleUser>(null, GoogleActionStatus.Error, "the user has disconnected");
+            _onLogin?.Invoke(this, args);
         }
 
         public void OnConnectionFailed(ConnectionResult result)
         {
-            LoginEventArgs e = new LoginEventArgs();
-            e.Message = result.ErrorMessage;
-            _onLogin?.Invoke(this, e);
+            GoogleClientResultEventArgs<GoogleUser> args = new GoogleClientResultEventArgs<GoogleUser>(null, GoogleActionStatus.Error, "the connection to the client has failed");
+            _onLogin?.Invoke(this, args);
         }
 
     }

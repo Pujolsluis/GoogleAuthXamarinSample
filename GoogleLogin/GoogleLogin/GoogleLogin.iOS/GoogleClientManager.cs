@@ -25,8 +25,8 @@ namespace GoogleLogin.iOS
             SignIn.SharedInstance.Delegate = this;
         }
 
-        static EventHandler<LoginEventArgs> _onLogin;
-        public event EventHandler<LoginEventArgs> OnLogin
+        static EventHandler<GoogleClientResultEventArgs<Models.GoogleUser>> _onLogin;
+        public event EventHandler<GoogleClientResultEventArgs<Models.GoogleUser>> OnLogin
         {
             add => _onLogin += value;
             remove => _onLogin -= value;
@@ -45,11 +45,6 @@ namespace GoogleLogin.iOS
             ViewController = viewController;
 
             SignIn.SharedInstance.SignInUser();
-        }
-
-        protected virtual void OnLoginCompleted(LoginEventArgs e)
-        {
-            _onLogin?.Invoke(this, e);
         }
 
         static EventHandler _onLogout;
@@ -72,19 +67,19 @@ namespace GoogleLogin.iOS
             OnLogoutCompleted(EventArgs.Empty);
         }
 
+        public bool IsLoggedIn { get; }
+
         public void DidSignIn(SignIn signIn, GoogleUser user, NSError error)
         {
-            LoginEventArgs args = new LoginEventArgs();
 
-            // Assume the authentication failed
-            args.Message = "Authentication Failed";
+            Models.GoogleUser googleUser = null;
 
             // Log the result of the authentication
             System.Diagnostics.Debug.WriteLine(Tag + ": Authentication Failed");
 
             if (user != null && error == null)
             {
-                args.User = new Models.GoogleUser
+                googleUser = new Models.GoogleUser
                 {
                     Name = user.Profile.Name,
                     Email = user.Profile.Email,
@@ -93,13 +88,13 @@ namespace GoogleLogin.iOS
                         : new Uri(string.Empty)
                 };
             }
-            else
-            {
-                args.Message = "The authentication was a success!";
-            }
+
+            var args = 
+                new GoogleClientResultEventArgs<Models.GoogleUser>(googleUser, GoogleActionStatus.Completed, error?.LocalizedDescription);
+
 
             // Send the result to the receivers
-            OnLoginCompleted(args);
+            _onLogin?.Invoke(this, args);
         }
 
         [Export("signIn:didDisconnectWithUser:with:Error:")]

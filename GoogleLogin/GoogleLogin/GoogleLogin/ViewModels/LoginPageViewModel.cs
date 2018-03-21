@@ -54,14 +54,15 @@ namespace GoogleLogin.ViewModels
         }
 
 
-        private void OnLoginCompleted(object sender, LoginEventArgs loginEventArgs)
+        private void OnLoginCompleted(object sender, GoogleClientResultEventArgs<GoogleUser> loginEventArgs)
         {
-            if (loginEventArgs.User != null)
+            if (loginEventArgs.Data != null)
             {
-                user = loginEventArgs.User;
-                System.Diagnostics.Debug.WriteLine(loginEventArgs.User.Email);
+                user = loginEventArgs.Data;
+
+                // Log the current user email
+                System.Diagnostics.Debug.WriteLine(user.Email);
                 IsLoggedIn = true;
-               // App.Current.MainPage.DisplayAlert("Success?", user.Name + "\n" + user.Email + "\n" + user.Picture, "OK");
             }
             else
             {

@@ -7,17 +7,59 @@ using GoogleLogin.Models;
 namespace GoogleLogin.Services
 {
 
-    class LoginEventArgs : EventArgs
+    public enum GoogleActionStatus
     {
-        public GoogleUser User { get; set; }
-        public string Message { get; set; }
+        Canceled,
+        Unauthorized,
+        Completed,
+        Error
     }
 
+    class GoogleClientResultEventArgs<T> : EventArgs
+    {
+        public T Data { get; set; }
+        public GoogleActionStatus Status { get; set; }
+        public string Message { get; set; }
+
+        public GoogleClientResultEventArgs(T data, GoogleActionStatus status, string msg = "")
+        {
+            Data = data;
+            Status = status;
+            Message = msg;
+        }
+    }
+
+    class GoogleResponse<T>
+    {
+        public T Data { get; set; }
+        public GoogleActionStatus Status { get; set; }
+        public string Message { get; set; }
+
+        public GoogleResponse(GoogleClientResultEventArgs<T> evtArgs)
+        {
+            Data = evtArgs.Data;
+            Status = evtArgs.Status;
+            Message = evtArgs.Message;
+        }
+
+        public GoogleResponse(T user, GoogleActionStatus status, string msg = "")
+        {
+            Data = user;
+            Status = status;
+            Message = msg;
+        }
+    }
+
+
+    /// <summary>
+    /// Interface for GoogleClient
+    /// </summary>
     interface IGoogleClientManager
     {
-        event EventHandler<LoginEventArgs> OnLogin;
+        event EventHandler<GoogleClientResultEventArgs<GoogleUser>> OnLogin;
         event EventHandler OnLogout;
         void Login();
         void Logout();
+        bool IsLoggedIn { get; }
     }
 }
