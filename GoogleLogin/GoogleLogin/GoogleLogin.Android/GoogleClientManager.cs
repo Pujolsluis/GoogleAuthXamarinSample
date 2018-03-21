@@ -20,6 +20,7 @@ namespace GoogleLogin.Droid
     {
         public static GoogleApiClient googleApiClient { get; set; }
         public static Activity CurrentActivity { get; set; }
+        private String Tag = typeof(GoogleClientManager).FullName;
 
 
         public GoogleClientManager()
@@ -79,7 +80,7 @@ namespace GoogleLogin.Droid
             googleApiClient.Disconnect();
 
             // Log the state of the client
-            System.Diagnostics.Debug.WriteLine("Is it Connected? " + googleApiClient.IsConnected);
+            System.Diagnostics.Debug.WriteLine(Tag + ": Is it Connected? " + googleApiClient.IsConnected);
            
             // Send the logout result to the receivers
             OnLogoutCompleted(EventArgs.Empty);
@@ -93,7 +94,7 @@ namespace GoogleLogin.Droid
             args.Message = "Authentication Failed";
 
             // Log the result of the authentication
-            System.Diagnostics.Debug.WriteLine("Is it Authenticated? " + result.IsSuccess);
+            System.Diagnostics.Debug.WriteLine(Tag + ": Is it Authenticated? " + result.IsSuccess);
 
             if (result.IsSuccess)
             {          
