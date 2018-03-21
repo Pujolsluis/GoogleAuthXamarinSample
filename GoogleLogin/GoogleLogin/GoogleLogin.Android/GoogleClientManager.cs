@@ -18,9 +18,10 @@ namespace GoogleLogin.Droid
 {
     class GoogleClientManager : Object, IGoogleClientManager, GoogleApiClient.IConnectionCallbacks, GoogleApiClient.IOnConnectionFailedListener
     {
+        // Class Debug Tag
+        private String Tag = typeof(GoogleClientManager).FullName;
         public static GoogleApiClient googleApiClient { get; set; }
         public static Activity CurrentActivity { get; set; }
-        private String Tag = typeof(GoogleClientManager).FullName;
 
 
         public GoogleClientManager()
@@ -80,7 +81,7 @@ namespace GoogleLogin.Droid
             googleApiClient.Disconnect();
 
             // Log the state of the client
-            System.Diagnostics.Debug.WriteLine(Tag + ": Is it Connected? " + googleApiClient.IsConnected);
+            System.Diagnostics.Debug.WriteLine(Tag + ": Is the user Connected? " + googleApiClient.IsConnected);
            
             // Send the logout result to the receivers
             OnLogoutCompleted(EventArgs.Empty);

@@ -14,9 +14,9 @@ namespace GoogleLogin.iOS
 {
     class GoogleClientManager : NSObject, IGoogleClientManager, ISignInDelegate, ISignInUIDelegate
     {
-        public event EventHandler OnLogout;
-        private UIViewController ViewController { get; set; }
+        // Class Debug Tag
         private String Tag = typeof(GoogleClientManager).FullName;
+        private UIViewController ViewController { get; set; }
 
 
         public GoogleClientManager()
@@ -52,9 +52,24 @@ namespace GoogleLogin.iOS
             _onLogin?.Invoke(this, e);
         }
 
+        static EventHandler _onLogout;
+        public event EventHandler OnLogout
+        {
+            add => _onLogout += value;
+            remove => _onLogout -= value;
+        }
+
+        protected virtual void OnLogoutCompleted(EventArgs e)
+        {
+            _onLogout?.Invoke(this, e);
+        }
+
         public void Logout()
         {
             SignIn.SharedInstance.SignOutUser();
+
+            // Send the logout result to the receivers
+            OnLogoutCompleted(EventArgs.Empty);
         }
 
         public void DidSignIn(SignIn signIn, GoogleUser user, NSError error)
@@ -91,6 +106,8 @@ namespace GoogleLogin.iOS
         public void DidDisconnect(SignIn signIn, GoogleUser user, NSError error)
         {
             // Perform any operations when the user disconnects from app here.
+            // Log the state of the client
+            System.Diagnostics.Debug.WriteLine(Tag + ": Is the user Connected? " + false);
         }
 
         [Export("signInWillDispatch:error:")]
