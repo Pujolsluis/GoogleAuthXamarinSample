@@ -23,7 +23,7 @@ namespace GoogleLogin.Droid
     {
         // Class Debug Tag
         private String Tag = typeof(GoogleClientManager).FullName;
-        public static GoogleApiClient googleApiClient { get; set; }
+        public static GoogleApiClient GoogleApiClient { get; set; }
         public static Activity CurrentActivity { get; set; }
         static TaskCompletionSource<GoogleResponse<GoogleUser>> _loginTcs;
 
@@ -35,7 +35,7 @@ namespace GoogleLogin.Droid
                     .RequestEmail()
                     .Build();
 
-            googleApiClient = new GoogleApiClient.Builder(Application.Context)
+            GoogleApiClient = new GoogleApiClient.Builder(Application.Context)
                 .AddConnectionCallbacks(this)
                 .AddOnConnectionFailedListener(this)
                 .AddApi(Auth.GOOGLE_SIGN_IN_API, googleSignInOptions)
@@ -58,9 +58,9 @@ namespace GoogleLogin.Droid
         public async Task<GoogleResponse<GoogleUser>> LoginAsync()
         {
             _loginTcs = new TaskCompletionSource<GoogleResponse<GoogleUser>>();
-            Intent intent = Auth.GoogleSignInApi.GetSignInIntent(googleApiClient);
+            Intent intent = Auth.GoogleSignInApi.GetSignInIntent(GoogleApiClient);
             CurrentActivity.StartActivityForResult(intent, 1);
-            googleApiClient.Connect();
+            GoogleApiClient.Connect();
 
             return await _loginTcs.Task;
         }
@@ -79,11 +79,11 @@ namespace GoogleLogin.Droid
 
         public void Logout()
         {
-            Auth.GoogleSignInApi.SignOut(googleApiClient);
-            googleApiClient.Disconnect();
+            Auth.GoogleSignInApi.SignOut(GoogleApiClient);
+            GoogleApiClient.Disconnect();
 
             // Log the state of the client
-            Debug.WriteLine(Tag + ": The user has logged out succesfully? " + !googleApiClient.IsConnected);
+            Debug.WriteLine(Tag + ": The user has logged out succesfully? " + !GoogleApiClient.IsConnected);
            
             // Send the logout result to the receivers
             OnLogoutCompleted(EventArgs.Empty);
@@ -119,7 +119,10 @@ namespace GoogleLogin.Droid
             {
                 var googleArgs =
                     new GoogleClientResultEventArgs<GoogleUser>(googleUser, GoogleActionStatus.Canceled, result.Status.StatusMessage);
-                
+
+                // Log the result of the authentication
+                Debug.WriteLine(Tag + ": User cancelled login operation");
+
                 // Send the result to the receivers
                 _onLogin?.Invoke(this, googleArgs);
                 _loginTcs.TrySetResult(new GoogleResponse<GoogleUser>(googleArgs));
@@ -129,19 +132,18 @@ namespace GoogleLogin.Droid
 
         public void OnConnected(Bundle connectionHint)
         {
-           
+           Debug.WriteLine(Tag + ": Connection to the client succesfull");
         }
 
         public void OnConnectionSuspended(int cause)
         {
-            GoogleClientResultEventArgs<GoogleUser> googleArgs = new GoogleClientResultEventArgs<GoogleUser>(null, GoogleActionStatus.Error, "the user has disconnected");
-            _onLogin?.Invoke(this, googleArgs);
+            Debug.WriteLine(Tag + ": Connection to the client was suspended");
         }
 
         public void OnConnectionFailed(ConnectionResult result)
         {
             GoogleClientResultEventArgs<GoogleUser> googleArgs = new GoogleClientResultEventArgs<GoogleUser>(null, GoogleActionStatus.Error, "the connection to the client has failed");
-            _onLogin?.Invoke(this, googleArgs);
+            Debug.WriteLine(Tag + ": Connection to the client failed with error <" + result.ErrorCode + "> " + result.ErrorMessage);
         }
 
     }

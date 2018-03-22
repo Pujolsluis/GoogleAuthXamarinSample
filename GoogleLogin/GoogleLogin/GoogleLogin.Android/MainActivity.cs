@@ -11,7 +11,7 @@ using Android.OS;
 
 namespace GoogleLogin.Droid
 {
-    [Activity(Label = "GoogleLogin", Icon = "@drawable/icon", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+    [Activity(Label = "Google Auth ", Icon = "@drawable/ic_launcher_crossgeeks", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
     public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity
     {
         private GoogleClientManager GoogleManager;

@@ -1,15 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Foundation;
 using Google.SignIn;
 using GoogleLogin.iOS;
 using GoogleLogin.Services;
 using UIKit;
+using Xamarin.Forms;
+using GoogleUser = GoogleLogin.Models.GoogleUser;
 
-[assembly: Xamarin.Forms.Dependency( typeof (GoogleClientManager))]
+[assembly: Dependency( typeof (GoogleClientManager))]
 namespace GoogleLogin.iOS
 {
     class GoogleClientManager : NSObject, IGoogleClientManager, ISignInDelegate, ISignInUIDelegate
@@ -17,7 +17,7 @@ namespace GoogleLogin.iOS
         // Class Debug Tag
         private String Tag = typeof(GoogleClientManager).FullName;
         private UIViewController ViewController { get; set; }
-        static TaskCompletionSource<GoogleResponse<Models.GoogleUser>> _loginTcs;
+        static TaskCompletionSource<GoogleResponse<GoogleUser>> _loginTcs;
 
         public GoogleClientManager()
         {
@@ -25,17 +25,17 @@ namespace GoogleLogin.iOS
             SignIn.SharedInstance.Delegate = this;
         }
 
-        static EventHandler<GoogleClientResultEventArgs<Models.GoogleUser>> _onLogin;
-        public event EventHandler<GoogleClientResultEventArgs<Models.GoogleUser>> OnLogin
+        static EventHandler<GoogleClientResultEventArgs<GoogleUser>> _onLogin;
+        public event EventHandler<GoogleClientResultEventArgs<GoogleUser>> OnLogin
         {
             add => _onLogin += value;
             remove => _onLogin -= value;
         }
 
-        public async Task<GoogleResponse<Models.GoogleUser>> LoginAsync()
+        public async Task<GoogleResponse<GoogleUser>> LoginAsync()
         {
 
-            _loginTcs = new TaskCompletionSource<GoogleResponse<Models.GoogleUser>>();
+            _loginTcs = new TaskCompletionSource<GoogleResponse<GoogleUser>>();
             
             var window = UIApplication.SharedApplication.KeyWindow;
             var viewController = window.RootViewController;
@@ -51,21 +51,6 @@ namespace GoogleLogin.iOS
             return await _loginTcs.Task;
 
         }
-
-        //public void Login()
-        //{
-
-        //    var window = UIApplication.SharedApplication.KeyWindow;
-        //    var viewController = window.RootViewController;
-        //    while (viewController.PresentedViewController != null)
-        //    {
-        //        viewController = viewController.PresentedViewController;
-        //    }
-
-        //    ViewController = viewController;
-
-        //    SignIn.SharedInstance.SignInUser();
-        //}
 
         static EventHandler _onLogout;
         public event EventHandler OnLogout
@@ -90,14 +75,14 @@ namespace GoogleLogin.iOS
 
         public bool IsLoggedIn { get; }
 
-        public void DidSignIn(SignIn signIn, GoogleUser user, NSError error)
+        public void DidSignIn(SignIn signIn, Google.SignIn.GoogleUser user, NSError error)
         {
 
-            Models.GoogleUser googleUser = null;
+            GoogleUser googleUser = null;
 
             if (user != null && error == null)
             {
-                googleUser = new Models.GoogleUser
+                googleUser = new GoogleUser
                 {
                     Name = user.Profile.Name,
                     Email = user.Profile.Email,
@@ -106,37 +91,37 @@ namespace GoogleLogin.iOS
                         : new Uri(string.Empty)
                 };
                 var googleArgs =
-                    new GoogleClientResultEventArgs<Models.GoogleUser>(googleUser, GoogleActionStatus.Completed, "the user is authenticated correctly");
+                    new GoogleClientResultEventArgs<GoogleUser>(googleUser, GoogleActionStatus.Completed, "the user is authenticated correctly");
 
                 // Log the result of the authentication
-                System.Diagnostics.Debug.WriteLine(Tag + ": Authentication " + GoogleActionStatus.Completed);
+                Debug.WriteLine(Tag + ": Authentication " + GoogleActionStatus.Completed);
 
                 // Send the result to the receivers
                 _onLogin?.Invoke(this, googleArgs);
-                _loginTcs.TrySetResult(new GoogleResponse<Models.GoogleUser>(googleArgs));
+                _loginTcs.TrySetResult(new GoogleResponse<GoogleUser>(googleArgs));
             }
             else
             {
                 var googleArgs =
-                    new GoogleClientResultEventArgs<Models.GoogleUser>(googleUser, GoogleActionStatus.Canceled, error?.LocalizedDescription);
+                    new GoogleClientResultEventArgs<GoogleUser>(googleUser, GoogleActionStatus.Canceled, error?.LocalizedDescription);
 
                 // Log the result of the authentication
-                System.Diagnostics.Debug.WriteLine(Tag + ": Authentication " + GoogleActionStatus.Canceled);
+                Debug.WriteLine(Tag + ": authentication failed with error " + error?.LocalizedDescription);
 
                 // Send the result to the receivers
                 _onLogin?.Invoke(this, googleArgs);
-                _loginTcs.TrySetResult(new GoogleResponse<Models.GoogleUser>(googleArgs));
+                _loginTcs.TrySetResult(new GoogleResponse<GoogleUser>(googleArgs));
             }
 
         }
 
         [Export("signIn:didDisconnectWithUser:with:Error:")]
-        public void DidDisconnect(SignIn signIn, GoogleUser user, NSError error)
+        public void DidDisconnect(SignIn signIn, Google.SignIn.GoogleUser user, NSError error)
         {
             // Perform any operations when the user disconnects from app here.
 
             // Log the state of the client
-            System.Diagnostics.Debug.WriteLine(Tag + ": the user has disconnected.");
+            Debug.WriteLine(Tag + ": the user has disconnected.");
         }
 
         [Export("signInWillDispatch:error:")]
