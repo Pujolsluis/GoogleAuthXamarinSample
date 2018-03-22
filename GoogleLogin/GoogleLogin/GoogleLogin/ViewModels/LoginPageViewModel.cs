@@ -50,7 +50,7 @@ namespace GoogleLogin.ViewModels
         public void Login()
         {
             googleClientManager.OnLogin += OnLoginCompleted;
-            googleClientManager.Login();
+            googleClientManager.LoginAsync();
         }
 
 

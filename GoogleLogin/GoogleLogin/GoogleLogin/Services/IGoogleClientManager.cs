@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading.Tasks;
 using GoogleLogin.Models;
 
 namespace GoogleLogin.Services
@@ -58,7 +59,7 @@ namespace GoogleLogin.Services
     {
         event EventHandler<GoogleClientResultEventArgs<GoogleUser>> OnLogin;
         event EventHandler OnLogout;
-        void Login();
+        Task<GoogleResponse<GoogleUser>> LoginAsync();
         void Logout();
         bool IsLoggedIn { get; }
     }

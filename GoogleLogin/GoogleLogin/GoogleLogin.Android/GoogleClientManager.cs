@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Android.Gms.Auth.Api;
@@ -10,10 +10,13 @@ using Android.OS;
 using GoogleLogin.Droid;
 using GoogleLogin.Models;
 using GoogleLogin.Services;
+using Xamarin.Forms;
 using Application = Android.App.Application;
+using Debug = System.Diagnostics.Debug;
 using Object = Java.Lang.Object;
+using String = System.String;
 
-[assembly: Xamarin.Forms.Dependency(typeof(GoogleClientManager))]
+[assembly: Dependency(typeof(GoogleClientManager))]
 namespace GoogleLogin.Droid
 {
     class GoogleClientManager : Object, IGoogleClientManager, GoogleApiClient.IConnectionCallbacks, GoogleApiClient.IOnConnectionFailedListener
@@ -22,6 +25,7 @@ namespace GoogleLogin.Droid
         private String Tag = typeof(GoogleClientManager).FullName;
         public static GoogleApiClient googleApiClient { get; set; }
         public static Activity CurrentActivity { get; set; }
+        static TaskCompletionSource<GoogleResponse<GoogleUser>> _loginTcs;
 
 
         public GoogleClientManager()
@@ -51,12 +55,22 @@ namespace GoogleLogin.Droid
             remove => _onLogin -= value;
         }
 
-        public void Login()
+        public async Task<GoogleResponse<GoogleUser>> LoginAsync()
         {
+            _loginTcs = new TaskCompletionSource<GoogleResponse<GoogleUser>>();
             Intent intent = Auth.GoogleSignInApi.GetSignInIntent(googleApiClient);
             CurrentActivity.StartActivityForResult(intent, 1);
             googleApiClient.Connect();
+
+            return await _loginTcs.Task;
         }
+
+        //public void Login()
+        //{
+        //    Intent intent = Auth.GoogleSignInApi.GetSignInIntent(googleApiClient);
+        //    CurrentActivity.StartActivityForResult(intent, 1);
+        //    googleApiClient.Connect();
+        //}
 
         static EventHandler _onLogout;
         public event EventHandler OnLogout
@@ -76,7 +90,7 @@ namespace GoogleLogin.Droid
             googleApiClient.Disconnect();
 
             // Log the state of the client
-            System.Diagnostics.Debug.WriteLine(Tag + ": Is the user Connected? " + googleApiClient.IsConnected);
+            Debug.WriteLine(Tag + ": Is the user Connected? " + googleApiClient.IsConnected);
            
             // Send the logout result to the receivers
             OnLogoutCompleted(EventArgs.Empty);
@@ -86,10 +100,10 @@ namespace GoogleLogin.Droid
 
         public void OnAuthCompleted(GoogleSignInResult result)
         {
-            Models.GoogleUser googleUser = null;
+            GoogleUser googleUser = null;
 
             // Log the result of the authentication
-            System.Diagnostics.Debug.WriteLine(Tag + ": Is it Authenticated? " + result.IsSuccess);
+            Debug.WriteLine(Tag + ": Is it Authenticated? " + result.IsSuccess);
 
             if (result.IsSuccess)
             {          
@@ -100,16 +114,22 @@ namespace GoogleLogin.Droid
                     Email = userAccount.Email,
                     Picture = new Uri((userAccount.PhotoUrl != null ? $"{userAccount.PhotoUrl}" : $"https://autisticdating.net/imgs/profile-placeholder.jpg"))
                 };
+
                 var googleArgs =
-                    new GoogleClientResultEventArgs<Models.GoogleUser>(googleUser, GoogleActionStatus.Completed, result.Status.StatusMessage);
+                    new GoogleClientResultEventArgs<GoogleUser>(googleUser, GoogleActionStatus.Completed, result.Status.StatusMessage);
                
                 // Send the result to the receivers
                 _onLogin?.Invoke(this, googleArgs);
+                _loginTcs.TrySetResult(new GoogleResponse<GoogleUser>(googleArgs));
             }
             else
             {
                 var googleArgs =
-                    new GoogleClientResultEventArgs<Models.GoogleUser>(googleUser, GoogleActionStatus.Canceled, result.Status.StatusMessage);
+                    new GoogleClientResultEventArgs<GoogleUser>(googleUser, GoogleActionStatus.Canceled, result.Status.StatusMessage);
+                
+                // Send the result to the receivers
+                _onLogin?.Invoke(this, googleArgs);
+                _loginTcs.TrySetResult(new GoogleResponse<GoogleUser>(googleArgs));
             }
 
         }
@@ -121,14 +141,14 @@ namespace GoogleLogin.Droid
 
         public void OnConnectionSuspended(int cause)
         {
-            GoogleClientResultEventArgs<GoogleUser> args = new GoogleClientResultEventArgs<GoogleUser>(null, GoogleActionStatus.Error, "the user has disconnected");
-            _onLogin?.Invoke(this, args);
+            GoogleClientResultEventArgs<GoogleUser> googleArgs = new GoogleClientResultEventArgs<GoogleUser>(null, GoogleActionStatus.Error, "the user has disconnected");
+            _onLogin?.Invoke(this, googleArgs);
         }
 
         public void OnConnectionFailed(ConnectionResult result)
         {
-            GoogleClientResultEventArgs<GoogleUser> args = new GoogleClientResultEventArgs<GoogleUser>(null, GoogleActionStatus.Error, "the connection to the client has failed");
-            _onLogin?.Invoke(this, args);
+            GoogleClientResultEventArgs<GoogleUser> googleArgs = new GoogleClientResultEventArgs<GoogleUser>(null, GoogleActionStatus.Error, "the connection to the client has failed");
+            _onLogin?.Invoke(this, googleArgs);
         }
 
     }

@@ -14,7 +14,7 @@
     <ContentPage.Content>
         <StackLayout HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
             
-            <Label Text="Welcome to Google Login App!"
+            <Label Text="Welcome to Google LoginAsync App!"
                    HorizontalOptions="CenterAndExpand" VerticalOptions="Start"
                    FontSize="20"
                    TextColor="#212121"

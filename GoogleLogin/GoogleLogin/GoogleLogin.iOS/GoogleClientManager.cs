@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
+using System.Threading.Tasks;
 using Foundation;
 using Google.SignIn;
 using GoogleLogin.iOS;
@@ -17,7 +17,7 @@ namespace GoogleLogin.iOS
         // Class Debug Tag
         private String Tag = typeof(GoogleClientManager).FullName;
         private UIViewController ViewController { get; set; }
-
+        static TaskCompletionSource<GoogleResponse<Models.GoogleUser>> _loginTcs;
 
         public GoogleClientManager()
         {
@@ -32,9 +32,11 @@ namespace GoogleLogin.iOS
             remove => _onLogin -= value;
         }
 
-        public void Login()
+        public async Task<GoogleResponse<Models.GoogleUser>> LoginAsync()
         {
 
+            _loginTcs = new TaskCompletionSource<GoogleResponse<Models.GoogleUser>>();
+            
             var window = UIApplication.SharedApplication.KeyWindow;
             var viewController = window.RootViewController;
             while (viewController.PresentedViewController != null)
@@ -45,7 +47,25 @@ namespace GoogleLogin.iOS
             ViewController = viewController;
 
             SignIn.SharedInstance.SignInUser();
+
+            return await _loginTcs.Task;
+
         }
+
+        //public void Login()
+        //{
+
+        //    var window = UIApplication.SharedApplication.KeyWindow;
+        //    var viewController = window.RootViewController;
+        //    while (viewController.PresentedViewController != null)
+        //    {
+        //        viewController = viewController.PresentedViewController;
+        //    }
+
+        //    ViewController = viewController;
+
+        //    SignIn.SharedInstance.SignInUser();
+        //}
 
         static EventHandler _onLogout;
         public event EventHandler OnLogout
@@ -58,6 +78,7 @@ namespace GoogleLogin.iOS
         {
             _onLogout?.Invoke(this, e);
         }
+
 
         public void Logout()
         {
@@ -74,9 +95,6 @@ namespace GoogleLogin.iOS
 
             Models.GoogleUser googleUser = null;
 
-            // Log the result of the authentication
-            System.Diagnostics.Debug.WriteLine(Tag + ": Authentication Failed");
-
             if (user != null && error == null)
             {
                 googleUser = new Models.GoogleUser
@@ -87,22 +105,38 @@ namespace GoogleLogin.iOS
                         ? new Uri(user.Profile.GetImageUrl(500).ToString())
                         : new Uri(string.Empty)
                 };
+                var googleArgs =
+                    new GoogleClientResultEventArgs<Models.GoogleUser>(googleUser, GoogleActionStatus.Completed, "the user is authenticated correctly");
+
+                // Log the result of the authentication
+                System.Diagnostics.Debug.WriteLine(Tag + ": Authentication " + GoogleActionStatus.Completed);
+
+                // Send the result to the receivers
+                _onLogin?.Invoke(this, googleArgs);
+                _loginTcs.TrySetResult(new GoogleResponse<Models.GoogleUser>(googleArgs));
+            }
+            else
+            {
+                var googleArgs =
+                    new GoogleClientResultEventArgs<Models.GoogleUser>(googleUser, GoogleActionStatus.Canceled, error?.LocalizedDescription);
+
+                // Log the result of the authentication
+                System.Diagnostics.Debug.WriteLine(Tag + ": Authentication " + GoogleActionStatus.Canceled);
+
+                // Send the result to the receivers
+                _onLogin?.Invoke(this, googleArgs);
+                _loginTcs.TrySetResult(new GoogleResponse<Models.GoogleUser>(googleArgs));
             }
 
-            var args = 
-                new GoogleClientResultEventArgs<Models.GoogleUser>(googleUser, GoogleActionStatus.Completed, error?.LocalizedDescription);
-
-
-            // Send the result to the receivers
-            _onLogin?.Invoke(this, args);
         }
 
         [Export("signIn:didDisconnectWithUser:with:Error:")]
         public void DidDisconnect(SignIn signIn, GoogleUser user, NSError error)
         {
             // Perform any operations when the user disconnects from app here.
+
             // Log the state of the client
-            System.Diagnostics.Debug.WriteLine(Tag + ": Is the user Connected? " + false);
+            System.Diagnostics.Debug.WriteLine(Tag + ": the user has disconnected.");
         }
 
         [Export("signInWillDispatch:error:")]
