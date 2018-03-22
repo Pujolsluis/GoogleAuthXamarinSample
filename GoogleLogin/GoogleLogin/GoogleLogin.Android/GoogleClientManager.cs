@@ -65,13 +65,6 @@ namespace GoogleLogin.Droid
             return await _loginTcs.Task;
         }
 
-        //public void Login()
-        //{
-        //    Intent intent = Auth.GoogleSignInApi.GetSignInIntent(googleApiClient);
-        //    CurrentActivity.StartActivityForResult(intent, 1);
-        //    googleApiClient.Connect();
-        //}
-
         static EventHandler _onLogout;
         public event EventHandler OnLogout
         {
@@ -90,7 +83,7 @@ namespace GoogleLogin.Droid
             googleApiClient.Disconnect();
 
             // Log the state of the client
-            Debug.WriteLine(Tag + ": Is the user Connected? " + googleApiClient.IsConnected);
+            Debug.WriteLine(Tag + ": The user has logged out succesfully? " + !googleApiClient.IsConnected);
            
             // Send the logout result to the receivers
             OnLogoutCompleted(EventArgs.Empty);
@@ -103,7 +96,7 @@ namespace GoogleLogin.Droid
             GoogleUser googleUser = null;
 
             // Log the result of the authentication
-            Debug.WriteLine(Tag + ": Is it Authenticated? " + result.IsSuccess);
+            Debug.WriteLine(Tag + ": Is the user authenticated? " + result.IsSuccess);
 
             if (result.IsSuccess)
             {          
