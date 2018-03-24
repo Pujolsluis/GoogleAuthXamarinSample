@@ -1,11 +1,9 @@
-﻿using GoogleLogin.Models;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using System.Text;
+using System.Diagnostics;
 using System.Windows.Input;
-using GoogleLogin.Services;
+using Plugin.GoogleClient;
+using Plugin.GoogleClient.Shared;
 using Xamarin.Forms;
 
 namespace GoogleLogin.ViewModels
@@ -40,14 +38,13 @@ namespace GoogleLogin.ViewModels
 
         public LoginPageViewModel()
         {
-            googleClientManager = DependencyService.Get<IGoogleClientManager>();
-            LoginCommand = new Command(Login);
+            LoginCommand = new Command(LoginAsync);
             LogoutCommand = new Command(Logout);
-
+            googleClientManager = CrossGoogleClient.Current;
             IsLoggedIn = false;
         }
 
-        public void Login()
+        public void LoginAsync()
         {
             googleClientManager.OnLogin += OnLoginCompleted;
             googleClientManager.LoginAsync();
@@ -61,7 +58,7 @@ namespace GoogleLogin.ViewModels
                 user = loginEventArgs.Data;
 
                 // Log the current user email
-                System.Diagnostics.Debug.WriteLine(user.Email);
+                Debug.WriteLine(user.Email);
                 IsLoggedIn = true;
             }
             else
