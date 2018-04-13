@@ -23,7 +23,7 @@ namespace GoogleLogin.Droid
         protected override void OnActivityResult(int requestCode, Result resultCode, Android.Content.Intent data)
         {
             base.OnActivityResult(requestCode, resultCode, data);
-
+            
             GoogleClientManager.OnAuthCompleted(requestCode, resultCode, data);
         }
     }

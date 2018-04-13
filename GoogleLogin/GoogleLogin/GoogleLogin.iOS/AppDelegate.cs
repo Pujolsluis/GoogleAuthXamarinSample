@@ -29,6 +29,7 @@ namespace GoogleLogin.iOS
 
         public override bool OpenUrl(UIApplication app, NSUrl url, NSDictionary options)
         {
+            
             var openUrlOptions = new UIApplicationOpenUrlOptions(options);
             return SignIn.SharedInstance.HandleUrl(url, openUrlOptions.SourceApplication, openUrlOptions.Annotation);
         }

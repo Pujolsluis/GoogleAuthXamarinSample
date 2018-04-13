@@ -23,9 +23,9 @@
 	<key>MinimumOSVersion</key>
 	<string>10.3</string>
 	<key>CFBundleDisplayName</key>
-	<string>GoogleLogin</string>
+	<string>Google Auth Sample</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.yourcompany.GoogleLogin</string>
+	<string>com.nopeia.googleloginauth</string>
 	<key>CFBundleVersion</key>
 	<string>1.0</string>
 	<key>CFBundleIconFiles</key>
@@ -57,7 +57,7 @@
 			<string>Google Auth Url</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.googleusercontent.apps.21161116507-q80eotisfos26lu3na24fluiv95b7qi3</string>
+				<string>com.googleusercontent.apps.505504259657-5tgds800n7qblhea90ql3rhsbk1r1m8g</string>
 			</array>
 		</dict>
 		<dict>
