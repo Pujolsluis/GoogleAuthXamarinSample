@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<Application xmlns="http://xamarin.com/schemas/2014/forms"
+<unity:PrismApplication xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:converter="clr-namespace:GoogleLogin.Views.Converter;assembly=GoogleLogin.iOS"
+             xmlns:unity="clr-namespace:Prism.Unity;assembly=Prism.Unity.Forms"
              x:Class="GoogleLogin.App">
-	<Application.Resources>
+    <unity:PrismApplication.Resources>
 
 		<!-- Application resource dictionary -->
 
-	</Application.Resources>
-</Application>
+	</unity:PrismApplication.Resources>
+</unity:PrismApplication>

@@ -2,6 +2,8 @@
 using Android.Content.PM;
 using Android.OS;
 using Plugin.GoogleClient;
+using Prism;
+using Prism.Ioc;
 
 namespace GoogleLogin.Droid
 {
@@ -14,10 +16,10 @@ namespace GoogleLogin.Droid
             ToolbarResource = Resource.Layout.Toolbar;
 
             base.OnCreate(bundle);
-            GoogleClientManager.Initialize(this);
             global::Xamarin.Forms.Forms.Init(this, bundle);
-            LoadApplication(new App());
-            
+            LoadApplication(new App(new AndroidInitializer()));
+            GoogleClientManager.Initialize(this);
+
         }
 
         protected override void OnActivityResult(int requestCode, Result resultCode, Android.Content.Intent data)
@@ -25,6 +27,14 @@ namespace GoogleLogin.Droid
             base.OnActivityResult(requestCode, resultCode, data);
             
             GoogleClientManager.OnAuthCompleted(requestCode, resultCode, data);
+        }
+
+        public class AndroidInitializer : IPlatformInitializer
+        {
+            public void RegisterTypes(IContainerRegistry containerRegistry)
+            {
+                containerRegistry.RegisterInstance<IGoogleClientManager>(CrossGoogleClient.Current);
+            }
         }
     }
 }

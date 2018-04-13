@@ -1,5 +1,7 @@
 ﻿using Foundation;
 using Google.SignIn;
+using Prism;
+using Prism.Ioc;
 using UIKit;
 
 namespace GoogleLogin.iOS
@@ -20,10 +22,9 @@ namespace GoogleLogin.iOS
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
             global::Xamarin.Forms.Forms.Init();
+            LoadApplication(new App(new iOSInitializer()));
             var googleServiceDictionary = NSDictionary.FromFile("GoogleService-Info.plist");
             SignIn.SharedInstance.ClientID = googleServiceDictionary["CLIENT_ID"].ToString();
-
-            LoadApplication(new App());
             return base.FinishedLaunching(app, options);
         }
 
@@ -32,6 +33,14 @@ namespace GoogleLogin.iOS
             
             var openUrlOptions = new UIApplicationOpenUrlOptions(options);
             return SignIn.SharedInstance.HandleUrl(url, openUrlOptions.SourceApplication, openUrlOptions.Annotation);
+        }
+
+        public class iOSInitializer : IPlatformInitializer
+        {
+            public void RegisterTypes(IContainerRegistry containerRegistry)
+            {
+                
+            }
         }
     }
 }
